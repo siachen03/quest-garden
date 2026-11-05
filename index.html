@@ -1,0 +1,3619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Quest Garden</title>
+  <meta name="description" content="无聊时抽一张卡，给空出来的几分钟找件想做的小事。" />
+  <style>
+    :root {
+      --ink: #2f2768;
+      --paper: #ffffff;
+      --soft: #ebe5ff;
+      --panel: #f4efff;
+      --muted: #5d52aa;
+      --sun: #ffe394;
+      --lilac: #dcd3ff;
+      --note: #fff0ba;
+      --line-heavy: #2f2768;
+      --line-light: #b9acf3;
+      --line: 2px;
+      --shadow: 5px 5px 0 0 var(--line-light);
+      --shadow-sm: 3px 3px 0 0 var(--line-light);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      letter-spacing: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-weight: 400;
+      font-family: ui-rounded, "SF Pro Rounded", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    .app {
+      width: min(1180px, 100%);
+      min-height: 100dvh;
+      margin: 0 auto;
+      background-color: var(--paper);
+      border-left: 0;
+      border-right: 0;
+      position: relative;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: calc(env(safe-area-inset-top, 0px) + 14px) 18px 14px;
+      background: var(--paper);
+      border-bottom: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--lilac);
+      box-shadow: none;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      flex: 0 0 auto;
+      transform: rotate(-2deg);
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 0.94;
+      font-weight: 950;
+      color: var(--line-heavy);
+    }
+
+    .brand-subtitle {
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .plain-btn,
+    .mini-btn,
+    .mood-btn {
+      border: var(--line) solid var(--line-heavy);
+      background: #ffffff;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    .icon-btn:active,
+    .primary-btn:active,
+    .plain-btn:active,
+    .mini-btn:active,
+    .mood-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0 0 0 0 var(--ink);
+    }
+
+    .icon-btn {
+      width: 42px;
+      min-width: 42px;
+      height: 46px;
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      background: #ffffff;
+    }
+
+    .i {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex: 0 0 auto;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .has-tip {
+      position: relative;
+    }
+
+    .has-tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%) translateY(4px);
+      min-width: max-content;
+      max-width: 160px;
+      padding: 6px 9px;
+      border-radius: 10px;
+      background: var(--line-heavy);
+      color: var(--paper);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease, transform 120ms ease;
+      z-index: 50;
+      white-space: nowrap;
+    }
+
+    .has-tip:hover::after,
+    .has-tip:focus-visible::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .top-actions .icon-btn {
+      border: 0;
+      box-shadow: none;
+      background: var(--paper);
+    }
+
+    .top-actions .has-tip::after {
+      top: calc(100% + 8px);
+      bottom: auto;
+      transform: translateX(-50%) translateY(-4px);
+      z-index: 80;
+    }
+
+    .top-actions .has-tip:hover::after,
+    .top-actions .has-tip:focus-visible::after {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .nav {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 14px 18px 0;
+      background: var(--paper);
+      border-bottom: var(--line) solid var(--line-heavy);
+      scrollbar-width: none;
+    }
+
+    .nav::before {
+      content: none;
+    }
+
+    .nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      position: relative;
+      z-index: 1;
+      flex: 0 0 auto;
+      min-width: 128px;
+      height: 44px;
+      padding: 0 22px;
+      margin: 8px 0 0;
+      border: var(--line) solid var(--line-heavy);
+      border-bottom: 0;
+      border-radius: 17px 17px 0 0;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--soft);
+      color: var(--muted);
+      box-shadow: none;
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+    }
+
+    .tab-btn.active {
+      z-index: 3;
+      background: var(--line-heavy);
+      color: var(--paper);
+      font-weight: 850;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .tab-btn.active::after {
+      content: none;
+    }
+
+    .nav .tab-btn:active {
+      transform: none;
+    }
+
+    main {
+      padding: 40px 18px 96px;
+    }
+
+    .view {
+      display: none;
+      animation: viewIn 260ms ease both;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes viewIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes cardPop {
+      0% {
+        transform: translateY(8px) rotate(-0.5deg) scale(0.98);
+      }
+      100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+      }
+    }
+
+    @keyframes drawButtonPress {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+      45% {
+        transform: translateY(-2px) scale(1.03);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .draw-pop {
+      animation: cardPop 280ms ease-out both;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 16px;
+      margin: 0 0 14px;
+    }
+
+    .section-note {
+      display: none;
+    }
+
+    .status-pill {
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 0;
+      padding: 9px 13px;
+      background: transparent;
+      box-shadow: none;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .mood-btn {
+      min-height: 54px;
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      padding: 8px 14px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-weight: 600;
+      background: #ffffff;
+    }
+
+    .energy-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 24px;
+      flex: 0 0 auto;
+    }
+
+    .energy-bars .bar {
+      width: 9px;
+      border-radius: 4px;
+      background: var(--line-light);
+    }
+
+    .energy-bars .bar:nth-child(1) {
+      height: 10px;
+    }
+
+    .energy-bars .bar:nth-child(2) {
+      height: 14px;
+    }
+
+    .energy-bars .bar:nth-child(3) {
+      height: 18px;
+    }
+
+    .energy-bars .bar.on {
+      background: var(--line-heavy);
+    }
+
+    .energy-bars.mini {
+      height: 22px;
+      gap: 3px;
+    }
+
+    .energy-bars.mini .bar {
+      width: 7px;
+    }
+
+    .mood-btn .label {
+      font-size: 13px;
+      line-height: 1.1;
+    }
+
+    .mood-btn.active {
+      background: var(--note);
+      box-shadow: none;
+      transform: translate(2px, 2px);
+      font-weight: 800;
+    }
+
+    .today-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .quest-card {
+      position: relative;
+      border: var(--line) solid var(--line-heavy);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      padding-bottom: 78px;
+      transition: transform 220ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 120ms ease;
+    }
+
+    .quest-card.done {
+      opacity: 0.76;
+      filter: none;
+    }
+
+    .quest-card.feature {
+      min-height: 430px;
+      background: var(--paper);
+    }
+
+    .quest-card.feature::before {
+      content: "";
+      position: absolute;
+      top: 18px;
+      right: 28px;
+      width: 108px;
+      height: 22px;
+      border-radius: 5px;
+      background: var(--note);
+      transform: rotate(-4deg);
+      z-index: 0;
+    }
+
+    .quest-card.alt {
+      min-height: 180px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: none;
+      padding-bottom: 72px;
+    }
+
+    .quest-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      padding: 28px 28px 12px;
+    }
+
+    .quest-title-wrap {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .quest-kicker {
+      display: block;
+      position: absolute;
+      z-index: 1;
+      left: 28px;
+      right: 210px;
+      bottom: 25px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      max-width: 100%;
+      text-align: left;
+    }
+
+    .quest-title {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.08;
+      font-weight: 950;
+      overflow-wrap: anywhere;
+    }
+
+    .quest-card.alt .quest-title {
+      font-size: 21px;
+      line-height: 1.14;
+    }
+
+    .quest-body {
+      position: relative;
+      z-index: 1;
+      padding: 10px 28px 22px;
+    }
+
+    .quest-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .energy-meta {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .quest-meta > span + span::before {
+      content: none;
+    }
+
+    .quest-prompt {
+      margin: 32px 0 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.45;
+      max-width: 520px;
+    }
+
+    .actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 28px 28px;
+    }
+
+    .quest-card.alt .actions {
+      padding: 0 18px 18px;
+    }
+
+    .quest-card > .actions {
+      position: absolute;
+      right: 24px;
+      bottom: 20px;
+      gap: 20px;
+      padding: 0;
+    }
+
+    .quest-card.alt > .actions {
+      right: 18px;
+      bottom: 18px;
+      padding: 0;
+    }
+
+    .quest-card.alt .quest-kicker {
+      left: 18px;
+      right: 180px;
+      bottom: 22px;
+    }
+
+    .primary-btn,
+    .plain-btn,
+    .mini-btn {
+      border: 2px solid var(--ink);
+      box-shadow: none;
+      min-height: 46px;
+      border-radius: 14px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 800;
+    }
+
+    .primary-btn {
+      background: var(--lilac);
+    }
+
+    .primary-btn.sun {
+      background: var(--sun);
+    }
+
+    .primary-btn.peach {
+      background: var(--sun);
+    }
+
+    .plain-btn {
+      background: #ffffff;
+    }
+
+    .mini-btn {
+      min-height: 38px;
+      border-radius: 13px;
+      padding: 0 11px;
+      font-size: 13px;
+    }
+
+    .mini-btn.peach {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .mini-emoji {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .quest-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .action-btn {
+      width: 46px;
+      min-width: 46px;
+      height: 46px;
+      padding: 0;
+      border-radius: 14px;
+    }
+
+    .soft-btn {
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .soft-btn:hover {
+      background: var(--soft);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .draw-stage {
+      display: grid;
+      place-items: center;
+      min-height: 560px;
+      padding: 28px 0 22px;
+    }
+
+    .draw-result {
+      width: min(720px, 100%);
+      margin: 0 auto;
+    }
+
+    .draw-stack {
+      padding-top: 28px;
+    }
+
+    .draw-card-shell {
+      position: relative;
+    }
+
+    .draw-card-shell::before,
+    .draw-card-shell::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: calc(100% - 28px);
+      height: 100%;
+      border: var(--line) solid var(--line-heavy);
+      border-radius: var(--radius);
+      background: var(--soft);
+      transform: translateX(-50%) rotate(-3deg);
+      z-index: 0;
+    }
+
+    .draw-card-shell::after {
+      top: 13px;
+      width: calc(100% - 14px);
+      background: var(--note);
+      transform: translateX(-50%) rotate(2.5deg);
+    }
+
+    .draw-card-shell .quest-card {
+      position: relative;
+      z-index: 1;
+    }
+
+    .draw-controls {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      margin-top: calc(40px + 28px);
+    }
+
+    .draw-main-btn {
+      position: relative;
+      overflow: hidden;
+      min-width: 190px;
+      height: 54px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--line-heavy);
+      color: var(--paper);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .draw-main-btn.draw-press {
+      animation: drawButtonPress 320ms ease-out both;
+    }
+
+    .pool-layout {
+      display: grid;
+      gap: 24px;
+    }
+
+    .pool-list-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 18px;
+      padding-left: 32px;
+      width: 100%;
+    }
+
+    .pool-list-head .status-pill {
+      align-self: end;
+      justify-self: end;
+      padding: 0;
+      text-align: right;
+    }
+
+    .pool-head-actions {
+      align-self: end;
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 0 0 8px;
+      white-space: nowrap;
+    }
+
+    .pool-count {
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .pool-count-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 28px;
+    }
+
+    .pool-count-emoji {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .pool-divider {
+      width: 1px;
+      height: 8px;
+      background: var(--line-light);
+      opacity: 0.55;
+    }
+
+    .storage-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 28px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      color: var(--muted);
+      padding: 0;
+      font-size: 18px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .storage-toggle.active {
+      color: var(--line-heavy);
+      font-weight: 700;
+    }
+
+    .pool-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .pool-list {
+      min-width: 0;
+    }
+
+    .form-panel {
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: none;
+      padding: 16px;
+    }
+
+    .form-panel h3 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      font-weight: 850;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .field input,
+    .select-trigger {
+      width: 100%;
+      height: 46px;
+      border: var(--line) solid var(--line-heavy);
+      border-radius: 15px;
+      background: #ffffff;
+      padding: 0 12px;
+      box-shadow: none;
+      font-weight: 500;
+      outline: none;
+    }
+
+    .field input:focus,
+    .select-trigger:focus-visible {
+      background: #fff6d1;
+    }
+
+    .custom-select {
+      position: relative;
+    }
+
+    .select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+      color: var(--ink);
+      appearance: none;
+    }
+
+    .select-trigger::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--line-heavy);
+      border-bottom: 2px solid var(--line-heavy);
+      transform: rotate(45deg) translateY(-2px);
+      flex: 0 0 auto;
+    }
+
+    .custom-select.open .select-trigger {
+      background: var(--note);
+    }
+
+    .select-options {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 30;
+      display: none;
+      padding: 7px;
+      border: var(--line) solid var(--line-heavy);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: 4px 4px 0 0 var(--line-light);
+    }
+
+    .custom-select.open .select-options {
+      display: grid;
+      gap: 3px;
+    }
+
+    .select-option {
+      min-height: 36px;
+      border: 0;
+      border-radius: 11px;
+      background: transparent;
+      color: var(--ink);
+      padding: 0 10px;
+      text-align: left;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .select-option:hover,
+    .select-option.active {
+      background: var(--soft);
+      font-weight: 700;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .pool-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 34px;
+      margin-bottom: 0;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .pool-filter-btn {
+      position: relative;
+      min-height: 32px;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 0;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 120ms ease, font-size 120ms ease;
+    }
+
+    .pool-filter-btn::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 16px;
+      height: 3px;
+      border-radius: 999px;
+      background: transparent;
+      transform: translateX(-50%);
+    }
+
+    .pool-filter-btn.active {
+      color: var(--line-heavy);
+      font-size: 17px;
+      font-weight: 850;
+    }
+
+    .pool-filter-btn.active::after {
+      background: var(--sun);
+    }
+
+    .pool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 18px;
+    }
+
+    .pool-card {
+      position: relative;
+      border: 2px solid var(--ink);
+      border-radius: 26px;
+      background: var(--paper);
+      box-shadow: none;
+      padding: 18px 18px 56px;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pool-card-head {
+      display: flex;
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .pool-name {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.16;
+      font-weight: 950;
+      overflow-wrap: anywhere;
+    }
+
+    .pool-card-bottom {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0;
+    }
+
+    .pool-card-bottom .quest-meta {
+      position: static;
+      flex: 0 0 auto;
+      margin: 0;
+    }
+
+    .pool-card .actions {
+      position: static;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 16px;
+      margin-left: auto;
+      padding: 0;
+    }
+
+    .pool-card .action-btn {
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      min-height: 30px;
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      color: var(--ink);
+    }
+
+    .pool-card .action-btn:hover {
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .pool-card .action-btn .i {
+      width: 21px;
+      height: 21px;
+      transform: translateY(2px);
+    }
+
+    .storage-card .remove-corner-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-3px);
+      transition: opacity 120ms ease, transform 120ms ease, background 120ms ease;
+    }
+
+    .storage-card:hover .remove-corner-btn,
+    .storage-card:focus-within .remove-corner-btn {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .map-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .map-main {
+      display: grid;
+      gap: 18px;
+    }
+
+    .adventure-map {
+      min-height: 540px;
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .radar-chart {
+      width: min(520px, 100%);
+      aspect-ratio: 1;
+      overflow: visible;
+    }
+
+    .radar-grid {
+      fill: none;
+      stroke: var(--line-light);
+      stroke-width: 1.6;
+    }
+
+    .radar-axis {
+      stroke: var(--line-light);
+      stroke-width: 1.4;
+    }
+
+    .radar-fill {
+      fill: rgba(255, 227, 148, 0.72);
+      stroke: var(--line-heavy);
+      stroke-width: 2.6;
+    }
+
+    .radar-dot {
+      fill: var(--line-heavy);
+    }
+
+    .radar-label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .stats-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stat-card,
+    .badge-card {
+      border: 0;
+      border-radius: 22px;
+      background: var(--panel);
+      box-shadow: none;
+      padding: 14px;
+    }
+
+    .stat-card h3,
+    .badge-card h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .stat-number {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-weight: 950;
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .stat-number span {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 52px;
+      border: var(--line) solid var(--line-heavy);
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: none;
+      padding: 9px 12px;
+    }
+
+    .history-item strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .history-item span {
+      display: block;
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .history-edit-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-edit-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 32px;
+      align-items: center;
+      gap: 10px;
+      min-height: 54px;
+      border: var(--line) solid var(--line-heavy);
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 9px 10px 9px 12px;
+    }
+
+    .history-edit-copy {
+      min-width: 0;
+    }
+
+    .history-edit-item strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .history-edit-item span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .history-edit-btn {
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
+      min-height: 32px;
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      box-shadow: none;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      cursor: pointer;
+      transition: background 120ms ease, transform 120ms ease;
+    }
+
+    .history-edit-btn:hover {
+      background: var(--soft);
+    }
+
+    .history-edit-btn:active {
+      transform: translateY(1px);
+    }
+
+    .history-edit-btn .i {
+      width: 18px;
+      height: 18px;
+    }
+
+    .history-empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      padding: 4px 0;
+    }
+
+    .trail-card {
+      border: 2px solid var(--ink);
+      border-radius: var(--radius);
+      background: #ffffff;
+      padding: 18px;
+    }
+
+    .trail-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .trail-head h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 850;
+    }
+
+    .trail-head span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .trail-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .trail-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .trail-weekday {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .trail-day {
+      position: relative;
+      aspect-ratio: 1;
+      min-height: 42px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--soft);
+      color: var(--ink);
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .trail-day.selected {
+      box-shadow: inset 0 0 0 2px var(--line-heavy), 0 0 0 3px var(--note);
+    }
+
+    .trail-day.future {
+      background: #f8f6ff;
+      color: #b1a9d3;
+      opacity: 0.72;
+      cursor: default;
+    }
+
+    .trail-day.today {
+      outline: 2px solid var(--line-heavy);
+      outline-offset: 2px;
+    }
+
+    .trail-blank {
+      aspect-ratio: 1;
+      min-height: 42px;
+    }
+
+    .trail-day.level-1 {
+      background: var(--note);
+    }
+
+    .trail-day.level-2 {
+      background: var(--lilac);
+    }
+
+    .trail-day.level-3 {
+      background: var(--line-heavy);
+      color: #ffffff;
+    }
+
+    .trail-date {
+      position: absolute;
+      left: 8px;
+      top: 6px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .trail-mark {
+      position: absolute;
+      right: 7px;
+      bottom: 6px;
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .trail-tip {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 8px);
+      z-index: 6;
+      width: min(230px, 72vw);
+      transform: translateX(-50%) translateY(4px);
+      border: 2px solid var(--line-heavy);
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: var(--shadow-sm);
+      color: var(--ink);
+      padding: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease, transform 120ms ease;
+      text-align: left;
+    }
+
+    .trail-day:hover .trail-tip,
+    .trail-day:focus-visible .trail-tip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .trail-tip strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .trail-tip p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .trail-detail {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 2px solid var(--line-light);
+    }
+
+    .trail-detail-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .trail-detail-head h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .trail-detail-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .empty {
+      border: 2px dashed var(--ink);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.78);
+      padding: 24px;
+      text-align: center;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transform: translateX(-50%) translateY(20px);
+      border: 2px solid var(--ink);
+      border-radius: 18px;
+      background: var(--sun);
+      box-shadow: none;
+      padding: 12px 16px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      width: min(420px, calc(100% - 32px));
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast-message {
+      min-width: 0;
+    }
+
+    .toast-action {
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 10px;
+      background: var(--line-heavy);
+      color: var(--paper);
+      padding: 7px 11px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .today-layout,
+      .draw-stage,
+      .pool-body,
+      .map-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .pool-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pool-list-head {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-left: 0;
+      }
+
+      .pool-list-head .status-pill {
+        align-self: start;
+        justify-self: start;
+        padding: 0;
+        text-align: left;
+      }
+
+      .pool-head-actions {
+        align-self: start;
+        justify-self: start;
+        justify-content: flex-start;
+        padding: 0;
+      }
+
+      .draw-stage {
+        min-height: auto;
+      }
+
+      .map-layout {
+        gap: 14px;
+      }
+
+      .trail-day {
+        min-height: 34px;
+        border-radius: 10px;
+      }
+
+      .trail-blank {
+        min-height: 34px;
+      }
+
+      .trail-date {
+        left: 6px;
+        top: 5px;
+        font-size: 10px;
+      }
+
+      .trail-mark {
+        right: 6px;
+        bottom: 5px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+      }
+
+      .brand-title {
+        font-size: 23px;
+      }
+
+      .brand-subtitle {
+        max-width: 180px;
+      }
+
+      .top-actions {
+        gap: 7px;
+      }
+
+      .icon-btn {
+        width: auto;
+        height: 42px;
+        min-width: 58px;
+        padding: 0 8px;
+      }
+
+      .nav {
+        gap: 9px;
+        padding: 12px 12px 0;
+      }
+
+      .tab-btn {
+        min-width: 104px;
+        height: 39px;
+        padding: 0 16px;
+        border-radius: 14px 14px 0 0;
+        font-size: 13px;
+      }
+
+      main {
+        padding: 40px 12px 92px;
+      }
+
+      .section-head {
+        align-items: flex-end;
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .mood-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quest-card.feature {
+        min-height: auto;
+      }
+
+      .quest-top {
+        padding: 15px 14px 8px;
+      }
+
+      .quest-body,
+      .actions {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .quest-card > .actions {
+        right: 14px;
+        bottom: 14px;
+        padding: 0;
+      }
+
+      .quest-kicker {
+        left: 14px;
+        right: 176px;
+        bottom: 20px;
+      }
+
+      .quest-title {
+        font-size: 28px;
+      }
+
+      .actions .primary-btn,
+      .actions .plain-btn {
+        flex: 1 1 150px;
+      }
+
+      .quest-card > .actions .primary-btn,
+      .quest-card > .actions .plain-btn {
+        flex: 0 0 auto;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .adventure-map {
+        min-height: 420px;
+      }
+    }
+
+    /* Mobile-first comfort pass: tuned for 360–430px phones */
+    @media (max-width: 480px) {
+      body {
+        min-width: 0;
+      }
+
+      .topbar {
+        gap: 8px;
+        padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px 10px;
+      }
+
+      .brand {
+        gap: 9px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        font-size: 19px;
+      }
+
+      .brand-title {
+        font-size: 20px;
+      }
+
+      .brand-subtitle {
+        max-width: 145px;
+        margin-top: 3px;
+        font-size: 11px;
+      }
+
+      .top-actions {
+        gap: 2px;
+      }
+
+      .top-actions .icon-btn {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        padding: 0;
+      }
+
+      .nav {
+        gap: 6px;
+        padding: 8px 10px 0;
+      }
+
+      .tab-btn {
+        min-width: 86px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 12px 12px 0 0;
+        font-size: 12px;
+      }
+
+      main {
+        padding: 20px 10px calc(76px + env(safe-area-inset-bottom, 0px));
+      }
+
+      .mood-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+        margin-bottom: 18px;
+      }
+
+      .mood-btn {
+        min-height: 48px;
+        padding: 7px 4px;
+        gap: 5px;
+        border-radius: 13px;
+      }
+
+      .mood-btn .label {
+        font-size: 12px;
+      }
+
+      .energy-bars {
+        gap: 2px;
+        height: 19px;
+      }
+
+      .energy-bars .bar {
+        width: 6px;
+        border-radius: 3px;
+      }
+
+      .energy-bars .bar:nth-child(1) { height: 8px; }
+      .energy-bars .bar:nth-child(2) { height: 12px; }
+      .energy-bars .bar:nth-child(3) { height: 16px; }
+
+      .today-layout,
+      .pool-body,
+      .map-layout {
+        gap: 14px;
+      }
+
+      .quest-card,
+      .quest-card.alt {
+        border-radius: 20px;
+        box-shadow: 3px 3px 0 var(--line-light);
+        padding-bottom: 0;
+      }
+
+      .quest-card.feature {
+        min-height: 0;
+      }
+
+      .quest-card::before {
+        top: 13px;
+        right: 17px;
+        width: 78px;
+        height: 17px;
+      }
+
+      .quest-top {
+        padding: 20px 16px 8px;
+      }
+
+      .quest-title,
+      .quest-card.alt .quest-title {
+        font-size: 26px;
+        line-height: 1.12;
+      }
+
+      .quest-body {
+        padding: 6px 16px 16px;
+      }
+
+      .quest-meta {
+        margin: 8px 0 12px;
+        font-size: 12px;
+      }
+
+      .quest-prompt {
+        margin-top: 18px;
+        font-size: 16px;
+        line-height: 1.4;
+      }
+
+      .quest-kicker,
+      .quest-card.alt .quest-kicker {
+        position: static;
+        margin: 0 16px 12px;
+        font-size: 11px;
+      }
+
+      .quest-card > .actions,
+      .quest-card.alt > .actions {
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0 16px 16px;
+      }
+
+      .quest-card > .actions .primary-btn,
+      .quest-card > .actions .plain-btn,
+      .quest-card.alt > .actions .primary-btn,
+      .quest-card.alt > .actions .plain-btn {
+        width: 100%;
+        min-width: 0;
+        min-height: 44px;
+        padding: 0 8px;
+        font-size: 13px;
+      }
+
+      .draw-stage {
+        min-height: 0;
+        padding: 18px 0 8px;
+      }
+
+      .draw-stack {
+        padding-top: 18px;
+      }
+
+      .draw-controls {
+        margin-top: 28px;
+      }
+
+      .draw-main-btn {
+        width: 100%;
+        min-width: 0;
+        height: 48px;
+      }
+
+      .pool-list-head {
+        gap: 8px;
+      }
+
+      .pool-toolbar {
+        gap: 20px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+      }
+
+      .pool-toolbar::-webkit-scrollbar { display: none; }
+
+      .pool-filter-btn {
+        flex: 0 0 auto;
+        font-size: 13px;
+      }
+
+      .pool-grid {
+        gap: 12px;
+      }
+
+      .pool-card {
+        min-height: 168px;
+        border-radius: 20px;
+        padding: 15px 15px 54px;
+      }
+
+      .pool-name {
+        font-size: 20px;
+      }
+
+      .pool-card-bottom {
+        left: 15px;
+        right: 15px;
+        bottom: 14px;
+      }
+
+      .form-panel {
+        border-radius: 20px;
+        padding: 14px;
+      }
+
+      .form-panel h3 {
+        font-size: 20px;
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .field input,
+      .select-trigger {
+        height: 48px;
+      }
+
+      .adventure-map {
+        min-height: 300px;
+        padding: 10px;
+        border-radius: 20px;
+      }
+
+      .radar-label {
+        font-size: 12px;
+      }
+
+      .toast {
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        width: calc(100% - 20px);
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden">
+    <symbol id="i-shuffle" viewBox="0 0 24 24">
+      <path d="M16 3h5v5" />
+      <path d="M4 20 21 3" />
+      <path d="M21 16v5h-5" />
+      <path d="M15 15l6 6" />
+      <path d="M4 4l5 5" />
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="M20 6 9 17l-5-5" />
+    </symbol>
+    <symbol id="i-cards" viewBox="0 0 24 24">
+      <rect x="6" y="4" width="12" height="16" rx="2" />
+      <path d="M9 8h6" />
+      <path d="M9 12h6" />
+    </symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24">
+      <path d="M10 2v2" />
+      <path d="M14 2v2" />
+      <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" />
+      <path d="M6 2v2" />
+    </symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24">
+      <rect x="2" y="3" width="20" height="5" rx="1" />
+      <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+      <path d="M10 12h4" />
+    </symbol>
+    <symbol id="i-restore" viewBox="0 0 24 24">
+      <rect x="2" y="3" width="20" height="5" rx="1" />
+      <path d="M4 8v11a2 2 0 0 0 2 2h2" />
+      <path d="M20 8v11a2 2 0 0 1-2 2h-2" />
+      <path d="M9 15l3-3 3 3" />
+      <path d="M12 12v9" />
+    </symbol>
+    <symbol id="i-remove" viewBox="0 0 24 24">
+      <path d="M6 6l12 12" />
+      <path d="M18 6 6 18" />
+    </symbol>
+    <symbol id="i-link" viewBox="0 0 24 24">
+      <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+      <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2a5 5 0 0 0 7.1 7.1l1.1-1.1" />
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 21h14" />
+    </symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24">
+      <path d="M12 21V9" />
+      <path d="M7 14l5-5 5 5" />
+      <path d="M5 3h14" />
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </symbol>
+  </svg>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" id="brandMark" aria-hidden="true">🍹</div>
+        <div>
+          <h1 class="brand-title">Quest Garden</h1>
+          <div class="brand-subtitle" id="todayGreeting">今天也可以只走一小步</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn has-tip" type="button" id="exportBtn" data-tip="导出备份" title="导出备份" aria-label="导出备份"><svg class="i"><use href="#i-download"></use></svg></button>
+        <button class="icon-btn has-tip" type="button" id="importBtn" data-tip="导入备份" title="导入备份" aria-label="导入备份"><svg class="i"><use href="#i-upload"></use></svg></button>
+        <input class="sr-only" type="file" id="backupInput" accept="application/json,.json" />
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="主要页面">
+      <button class="tab-btn active" type="button" data-tab="today">今日</button>
+      <button class="tab-btn" type="button" data-tab="draw">抽卡</button>
+      <button class="tab-btn" type="button" data-tab="pool">Quest 池</button>
+      <button class="tab-btn" type="button" data-tab="map">地图</button>
+    </nav>
+
+    <main>
+      <section class="view active" id="view-today">
+        <div class="mood-grid" id="moodGrid"></div>
+
+        <div class="today-layout">
+          <div id="mainQuestMount"></div>
+          <div class="side-stack">
+            <div>
+              <div class="side-stack" id="backupMount"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-draw">
+        <div class="draw-stage">
+          <div class="draw-result" id="drawMount"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-pool">
+        <div class="pool-layout">
+          <div class="pool-list-head">
+            <div class="pool-toolbar" id="poolFilters"></div>
+            <div class="pool-head-actions">
+              <div class="status-pill pool-count pool-count-item">
+                <span class="pool-count-emoji" aria-hidden="true">🪴</span>
+                <span id="poolCount">0</span>
+              </div>
+              <div class="pool-divider" aria-hidden="true"></div>
+              <button class="storage-toggle has-tip" type="button" data-action="toggle-storage" data-tip="收纳盒" title="收纳盒" aria-label="收纳盒">
+                <span class="pool-count-emoji" aria-hidden="true">🧊</span>
+                <span id="storageCount">0</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pool-body">
+            <div class="pool-list">
+              <div class="pool-grid" id="poolMount"></div>
+            </div>
+
+            <form class="form-panel" id="questForm">
+              <h3>种下一颗新种子</h3>
+              <div class="field">
+                <label for="questTitle">标题</label>
+                <input id="questTitle" name="title" maxlength="42" placeholder="例如：画 5 分钟" required />
+              </div>
+              <div class="two-col">
+                <div class="field">
+                  <label for="questCategory">分类</label>
+                  <input type="hidden" id="questCategory" name="category" />
+                  <div class="custom-select" data-select="category">
+                    <button class="select-trigger" type="button" id="questCategoryButton" aria-haspopup="listbox" aria-expanded="false"><span></span></button>
+                    <div class="select-options" id="questCategoryOptions" role="listbox"></div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="questEnergy">能量</label>
+                  <input type="hidden" id="questEnergy" name="energy" />
+                  <div class="custom-select" data-select="energy">
+                    <button class="select-trigger" type="button" id="questEnergyButton" aria-haspopup="listbox" aria-expanded="false"><span></span></button>
+                    <div class="select-options" id="questEnergyOptions" role="listbox"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="questDuration">时间</label>
+                <input type="hidden" id="questDuration" name="duration" />
+                <div class="custom-select" data-select="duration">
+                  <button class="select-trigger" type="button" id="questDurationButton" aria-haspopup="listbox" aria-expanded="false"><span></span></button>
+                  <div class="select-options" id="questDurationOptions" role="listbox"></div>
+                </div>
+              </div>
+              <button class="primary-btn" type="submit"><svg class="i"><use href="#i-plus"></use></svg><span>加入</span></button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-map">
+        <div class="section-head">
+          <div class="status-pill" id="activeRealm">还在散步</div>
+        </div>
+
+        <div class="map-layout">
+          <div class="map-main">
+            <div class="adventure-map" id="adventureMap">
+            </div>
+            <div class="trail-card" id="trailCalendar">
+            </div>
+          </div>
+          <div class="stats-panel" id="mapStats"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "quest_garden_local_save";
+    const DATA_VERSION = 2;
+    const LEGACY_STORAGE_KEYS = [
+      "quest_garden_preview_v9",
+      "quest_garden_preview_v8",
+      "quest_garden_preview_v7",
+      "quest_garden_preview_v6",
+      "quest_garden_preview_v5",
+      "quest_garden_preview_v4",
+      "quest_garden_preview_v3"
+    ];
+    const todayKey = new Date().toLocaleDateString("en-CA");
+
+    const categories = {
+      "放松": { icon: "松", color: "#f4efff" },
+      "灵感": { icon: "灵", color: "#dcd3ff" },
+      "漫游": { icon: "游", color: "#ebe5ff" },
+      "创作": { icon: "创", color: "#ffe394" },
+      "整理": { icon: "整", color: "#ebe5ff" },
+      "项目": { icon: "项", color: "#f4efff" }
+    };
+
+    const poolFilters = [
+      { id: "全部", label: "全部", categories: null },
+      { id: "放松", label: "放松", categories: ["放松"] },
+      { id: "灵感", label: "灵感", categories: ["灵感"] },
+      { id: "漫游", label: "漫游", categories: ["漫游"] },
+      { id: "创作", label: "创作", categories: ["创作"] },
+      { id: "整理", label: "整理", categories: ["整理"] },
+      { id: "项目", label: "项目", categories: ["项目"] }
+    ];
+    const realmFilters = poolFilters.filter(filter => filter.categories);
+    const legacyCategoryRealms = {
+      "恢复能量": "放松",
+      "轻松逛逛": "放松",
+      "获取灵感": "灵感",
+      "学习": "灵感",
+      "微创作": "创作",
+      "内容运营": "创作",
+      "发布": "创作",
+      "微整理": "整理",
+      "数字整理": "整理",
+      "AI探索": "项目",
+      "长期项目": "项目"
+    };
+
+    const moods = [
+      { id: "tired", level: 1, label: "很累", energies: ["low"], route: "今天适合很轻的小动作。" },
+      { id: "normal", level: 2, label: "一般", energies: ["medium"], route: "挑一条舒服的小路走走。" },
+      { id: "great", level: 3, label: "爆棚", energies: ["high"], route: "今天可以去远一点的兴趣岛。" }
+    ];
+
+    const energyOptions = [
+      { value: "low", label: "低" },
+      { value: "medium", label: "中" },
+      { value: "high", label: "高" }
+    ];
+
+    const durationOptions = [
+      { value: "5", label: "5 分钟", energy: "low" },
+      { value: "15", label: "15 分钟", energy: "medium" },
+      { value: "30", label: "30 分钟", energy: "high" }
+    ];
+
+    const durationByEnergy = { low: 5, medium: 15, high: 30 };
+    const energyByDuration = { 5: "low", 15: "medium", 30: "high" };
+
+    const sampleQuests = [
+      ...questSeedGroup("放松", "low", 5, [
+        "倒一杯水，喝几口",
+        "走到窗边透透气",
+        "做 3 个肩颈拉伸",
+        "听一首歌",
+        "做 5 次深呼吸"
+      ]),
+      ...questSeedGroup("灵感", "low", 5, [
+        "刷 Pinterest，收藏 3 张图",
+        "逛 X，收藏 1 条灵感",
+        "看 Instagram，保存 1 个作品",
+        "看 YouTube Shorts，记 1 个剪辑点",
+        "收藏 1 个喜欢的作品",
+        "收藏 1 个 AI 网站"
+      ]),
+      ...questSeedGroup("漫游", "low", 5, [
+        "玩一局图寻",
+        "在地图上找一个海边小镇",
+        "随机看一个城市的街景",
+        "打开维基，读一个人物简介",
+        "顺着 Wiki 点 1 个链接"
+      ]),
+      ...questSeedGroup("创作", "low", 5, [
+        "画 5 分钟，不用画完",
+        "发一张最近拍的 Instagram",
+        "发一条 X 小记录",
+        "记录 1 个 Prompt 想法"
+      ]),
+      ...questSeedGroup("整理", "low", 5, [
+        "清理桌面上 5 件东西",
+        "删除 10 个下载文件",
+        "整理 1 个文件夹",
+        "给手机相册删 10 张废图",
+        "删除 10 张废照片",
+        "关掉 5 个浏览器标签"
+      ]),
+      ...questSeedGroup("整理", "medium", 15, [
+        "把 10 个工作文件放进文件夹",
+        "挑 3 张作品候选图",
+        "整理 10 个音乐文件",
+        "把 5 个 AI 素材放到一起",
+        "整理最近 20 张截图",
+        "给 1 个文件夹重新分类"
+      ]),
+      ...questSeedGroup("项目", "medium", 15, [
+        "列 3 个 AI 小工具点子",
+        "画一个 AI 小游戏开始界面",
+        "测试 1 个 Prompt 的不同写法",
+        "打开 1 个 AI 网站试一次",
+        "给 1 个 Prompt 加一句限制"
+      ]),
+      ...questSeedGroup("创作", "medium", 15, [
+        "选 1 张图写 Instagram 文案",
+        "写 1 条可以发的 X",
+        "把 3 条待发布内容排个顺序",
+        "改 1 句主页简介"
+      ]),
+      ...questSeedGroup("放松", "medium", 15, [
+        "淘宝收藏 3 件喜欢的衣服",
+        "收藏 2 双喜欢的鞋子",
+        "收藏 2 个喜欢的包",
+        "把 3 个喜欢的商品放进收藏夹",
+        "对比 2 个商品，不一定购买"
+      ]),
+      ...questSeedGroup("漫游", "medium", 15, [
+        "沿着一条河在地图上走一段",
+        "看一个城市的老城区",
+        "查一个地名背后的故事",
+        "读完一个人物故事的小节",
+        "看一个历史事件的开头"
+      ]),
+      ...questSeedGroup("创作", "high", 30, [
+        "找 1 个可以二创的视频片段",
+        "剪出 15 秒 Shorts 粗剪",
+        "给一张作品做 1 个粗糙版本",
+        "写 5 个内容标题",
+        "找 1 张海报参考图"
+      ]),
+      ...questSeedGroup("创作", "high", 30, [
+        "给 1 个视频写 YouTube 标题",
+        "选 1 张图准备发 Instagram",
+        "把 1 条想法整理成 X 草稿",
+        "挑 3 张作品候选图",
+        "新建一个作品候选文件夹"
+      ]),
+      ...questSeedGroup("灵感", "high", 30, [
+        "学 1 个 AI 技巧并记一句话",
+        "打开 Skill 列表，挑 1 个想试的",
+        "写 3 条个人 UI Skill 规则"
+      ]),
+      ...questSeedGroup("漫游", "high", 30, [
+        "玩 3 局图寻，记下最喜欢的地方",
+        "在 Google 地图规划一条想象路线",
+        "顺着 Wiki 点 5 个链接",
+        "读一个历史人物的完整词条",
+        "看一个国家或王朝的故事"
+      ]),
+      ...questSeedGroup("项目", "high", 30, [
+        "写下 Quest Generator 的下一个按钮",
+        "给网页小工具画一个草图",
+        "把 10 个素材放进同一个文件夹",
+        "写下新系列的 3 个主题",
+        "列出个人网站最想放的 3 个内容"
+      ])
+    ];
+
+    function questSeedGroup(category, energy, duration, titles) {
+      return titles.map(title => ({
+        title,
+        category,
+        energy,
+        duration,
+        tags: [category]
+      }));
+    }
+
+    const questPromptByTitle = {
+      "倒一杯水，喝几口": "先让身体知道：你在照顾它。",
+      "走到窗边透透气": "把视线交给远处一会儿。",
+      "做 3 个肩颈拉伸": "让紧绷的地方慢慢松开。",
+      "听一首歌": "只听完一首歌，也算回到自己。",
+      "做 5 次深呼吸": "把今天放慢五个呼吸。",
+      "刷 Pinterest，收藏 3 张图": "今天只负责看见三种可能。",
+      "逛 X，收藏 1 条灵感": "遇到一点火花，就先收起来。",
+      "看 Instagram，保存 1 个作品": "给审美补一枚小小贝壳。",
+      "看 YouTube Shorts，记 1 个剪辑点": "只带走一个让你眼睛亮的节奏。",
+      "收藏 1 个喜欢的作品": "不用分析，喜欢就是线索。",
+      "收藏 1 个 AI 网站": "给未来的自己留一扇门。",
+      "玩一局图寻": "把自己丢进一个陌生角落看看。",
+      "在地图上找一个海边小镇": "沿着海岸线捡一个想象里的下午。",
+      "随机看一个城市的街景": "让视线去一条没有去过的街。",
+      "打开维基，读一个人物简介": "先认识一个名字背后的人生。",
+      "顺着 Wiki 点 1 个链接": "允许好奇心拐一个小弯。",
+      "画 5 分钟，不用画完": "让手感醒来，不要求结果。",
+      "发一张最近拍的 Instagram": "把生活里好看的一角递出去。",
+      "发一条 X 小记录": "把脑子里的一句话放到外面。",
+      "记录 1 个 Prompt 想法": "先存下种子，晚点再发芽。",
+      "清理桌面上 5 件东西": "让眼前少一点噪音。",
+      "删除 10 个下载文件": "给电脑松一口气。",
+      "整理 1 个文件夹": "只给一个小区域重新命名秩序。",
+      "给手机相册删 10 张废图": "让相册留下更想看的部分。",
+      "删除 10 张废照片": "轻轻移走那些不再需要的画面。",
+      "关掉 5 个浏览器标签": "给脑子少开几扇窗。",
+      "把 10 个工作文件放进文件夹": "先把散落的东西聚到一起。",
+      "挑 3 张作品候选图": "从一堆可能里选出三束光。",
+      "整理 10 个音乐文件": "让声音也有自己的小抽屉。",
+      "把 5 个 AI 素材放到一起": "给下一次实验准备一个小盘子。",
+      "整理最近 20 张截图": "把临时记忆变成可找到的东西。",
+      "给 1 个文件夹重新分类": "只重排一格，就会清楚一点。",
+      "列 3 个 AI 小工具点子": "先把想法排成三颗小星星。",
+      "画一个 AI 小游戏开始界面": "先看见入口，不急着做完整。",
+      "测试 1 个 Prompt 的不同写法": "换一种问法，看看答案怎么变。",
+      "打开 1 个 AI 网站试一次": "像敲门一样，试一下就好。",
+      "给 1 个 Prompt 加一句限制": "给灵感加一条温柔的边界。",
+      "选 1 张图写 Instagram 文案": "给一张图配一句能留下的气味。",
+      "写 1 条可以发的 X": "把一个想法压成一枚小纸条。",
+      "把 3 条待发布内容排个顺序": "先让出口有一条小队伍。",
+      "改 1 句主页简介": "只修一句门牌，让别人更容易看见你。",
+      "淘宝收藏 3 件喜欢的衣服": "只采集喜欢，不急着拥有。",
+      "收藏 2 双喜欢的鞋子": "给未来的穿搭留两个方向。",
+      "收藏 2 个喜欢的包": "把喜欢的轮廓先放进口袋。",
+      "把 3 个喜欢的商品放进收藏夹": "让想买的念头先安静排队。",
+      "对比 2 个商品，不一定购买": "比较一下就好，钱包不用上场。",
+      "沿着一条河在地图上走一段": "顺着水流走，看看它经过哪里。",
+      "看一个城市的老城区": "找找一座城最有时间感的地方。",
+      "查一个地名背后的故事": "给地图上的一个名字添上来历。",
+      "读完一个人物故事的小节": "只读一小段人生，不急着读完。",
+      "看一个历史事件的开头": "先弄清故事是从哪里开始的。",
+      "找 1 个可以二创的视频片段": "先找到一块可以发光的素材。",
+      "剪出 15 秒 Shorts 粗剪": "粗糙也可以，先让节奏跑起来。",
+      "给一张作品做 1 个粗糙版本": "让想法先有形状，精致以后再说。",
+      "写 5 个内容标题": "给未来的表达铺五个入口。",
+      "找 1 张海报参考图": "今天只负责看见一种版式可能。",
+      "给 1 个视频写 YouTube 标题": "先替这个视频想一个门口招牌。",
+      "选 1 张图准备发 Instagram": "从相册里挑一张可以见人的光。",
+      "把 1 条想法整理成 X 草稿": "把散掉的念头收成一句话。",
+      "新建一个作品候选文件夹": "给未来的作品先留一个住处。",
+      "学 1 个 AI 技巧并记一句话": "带走一句能下次用上的钥匙。",
+      "打开 Skill 列表，挑 1 个想试的": "只挑一颗好奇心，不急着学完。",
+      "写 3 条个人 UI Skill 规则": "把自己的审美经验收成三条线。",
+      "玩 3 局图寻，记下最喜欢的地方": "让三个陌生地点里，留下一个最想再看的。",
+      "在 Google 地图规划一条想象路线": "不出门也可以先拥有一段旅程。",
+      "顺着 Wiki 点 5 个链接": "让故事自己带路，走到意外的地方。",
+      "读一个历史人物的完整词条": "陪一个名字走完一段长长的人生。",
+      "看一个国家或王朝的故事": "给一片地图补上时间的影子。",
+      "写下 Quest Generator 的下一个按钮": "只决定下一颗按钮长什么样。",
+      "给网页小工具画一个草图": "先画出大概轮廓，让想法落地。",
+      "把 10 个素材放进同一个文件夹": "给散落的素材搭一个临时营地。",
+      "写下新系列的 3 个主题": "给未来的系列点亮三个路标。",
+      "列出个人网站最想放的 3 个内容": "先决定门厅里最想展示什么。"
+    };
+
+    let app = loadState();
+    let toastTimer = null;
+
+    function makeQuest(raw, index) {
+      return {
+        id: raw.id || "q_" + Date.now().toString(36) + "_" + index + "_" + Math.random().toString(36).slice(2, 6),
+        title: raw.title,
+        category: raw.category,
+        energy: raw.energy,
+        duration: normalizeDuration(raw.energy, raw.duration),
+        tags: raw.tags || [],
+        archived: Boolean(raw.archived),
+        createdAt: raw.createdAt || new Date().toISOString(),
+        completedCount: Number(raw.completedCount || 0),
+        lastCompletedAt: raw.lastCompletedAt || null
+      };
+    }
+
+    function defaultState() {
+      const quests = sampleQuests.map(makeQuest);
+      return {
+        dataVersion: DATA_VERSION,
+        mood: "normal",
+        activeTab: "today",
+        poolFilter: "全部",
+        showStorageBox: false,
+        currentDrawId: null,
+        trailSelectedDate: todayKey,
+        quests,
+        daily: { date: "", mainQuestId: null, backupQuestIds: [], completedIds: [] },
+        dailyByMood: {},
+        history: []
+      };
+    }
+
+    function readStoredState() {
+      for (const key of [STORAGE_KEY, ...LEGACY_STORAGE_KEYS]) {
+        try {
+          const saved = JSON.parse(localStorage.getItem(key));
+          if (saved && Array.isArray(saved.quests)) {
+            if (key !== STORAGE_KEY) localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+            return saved;
+          }
+        } catch (error) {
+          // Ignore broken local saves and continue to the next key.
+        }
+      }
+      return null;
+    }
+
+    function normalizeStoredState(saved) {
+      saved.quests = saved.quests.map(makeQuest);
+      if (Number(saved.dataVersion || 0) < DATA_VERSION) {
+        const existingTitles = new Set(saved.quests.map(quest => quest.title));
+        const additions = sampleQuests
+          .filter(quest => quest.category === "漫游" && !existingTitles.has(quest.title))
+          .map((quest, index) => makeQuest(quest, saved.quests.length + index));
+        saved.quests.push(...additions);
+      }
+      saved.dataVersion = DATA_VERSION;
+      saved.history = Array.isArray(saved.history) ? saved.history : [];
+      saved.daily = saved.daily || { date: "", mainQuestId: null, backupQuestIds: [], completedIds: [] };
+      saved.dailyByMood = saved.dailyByMood && typeof saved.dailyByMood === "object" ? saved.dailyByMood : {};
+      const dailyMainIds = new Set([saved.daily.mainQuestId, ...Object.values(saved.dailyByMood).map(day => day?.mainQuestId)].filter(Boolean));
+      if (dailyMainIds.has(saved.currentDrawId)) saved.currentDrawId = null;
+      saved.showStorageBox = Boolean(saved.showStorageBox);
+      if (typeof saved.trailSelectedDate !== "string" || !saved.trailSelectedDate) saved.trailSelectedDate = todayKey;
+      if (!moods.some(mood => mood.id === saved.mood)) saved.mood = "normal";
+      if (saved.activeTab === "record") saved.activeTab = "map";
+      return saved;
+    }
+
+    function loadState() {
+      const saved = readStoredState();
+      if (!saved) return defaultState();
+      const normalized = normalizeStoredState(saved);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      return normalized;
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(app));
+    }
+
+    function backupFileName() {
+      const date = new Date().toLocaleDateString("en-CA");
+      return `quest-garden-backup-${date}.json`;
+    }
+
+    function exportBackup() {
+      const backup = {
+        ...app,
+        backupType: "quest-garden",
+        dataVersion: DATA_VERSION,
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = backupFileName();
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      showToast("备份文件已导出。");
+    }
+
+    function importBackup(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || ""));
+          const nextState = parsed?.state && Array.isArray(parsed.state.quests) ? parsed.state : parsed;
+          if (!nextState || !Array.isArray(nextState.quests)) throw new Error("Invalid backup");
+          if (!window.confirm("导入备份会覆盖当前数据，继续吗？")) return;
+          app = normalizeStoredState(nextState);
+          saveState();
+          ensureDaily();
+          render();
+          showToast("备份已经导入。");
+        } catch (error) {
+          showToast("这个备份文件读取失败。");
+        }
+      };
+      reader.onerror = () => showToast("这个备份文件读取失败。");
+      reader.readAsText(file);
+    }
+
+    function getMood() {
+      return moods.find(mood => mood.id === app.mood) || moods[1];
+    }
+
+    function getEnergyLabel(energy) {
+      return { low: "低能量", medium: "中能量", high: "高能量" }[energy] || "任意能量";
+    }
+
+    function getEnergyLevel(energy) {
+      return { low: 1, medium: 2, high: 3 }[energy] || 1;
+    }
+
+    function normalizeDuration(energy, duration) {
+      const value = Number(duration);
+      return [5, 15, 30].includes(value) ? value : durationByEnergy[energy] || 15;
+    }
+
+    function completedTodayIds() {
+      return Array.isArray(app.daily?.completedIds) ? app.daily.completedIds : [];
+    }
+
+    function isCompletedToday(id) {
+      return Boolean(id && completedTodayIds().includes(id));
+    }
+
+    function eligibleQuests() {
+      const allowed = getMood().energies;
+      return app.quests.filter(quest => !quest.archived && allowed.includes(quest.energy) && !isCompletedToday(quest.id));
+    }
+
+    function drawableQuests() {
+      return app.quests.filter(quest => !quest.archived && !isCompletedToday(quest.id));
+    }
+
+    function pickMany(count, source, avoidIds = []) {
+      const available = source.filter(quest => !avoidIds.includes(quest.id));
+      const picked = [];
+      const bag = [...available];
+      while (picked.length < count && bag.length) {
+        const index = Math.floor(Math.random() * bag.length);
+        picked.push(bag.splice(index, 1)[0]);
+      }
+      return picked;
+    }
+
+    function pickOneQuest(avoidIds = []) {
+      const pool = eligibleQuests();
+      return pickMany(1, pool, avoidIds)[0] || null;
+    }
+
+    function pickOneDrawQuest(avoidIds = [], options = {}) {
+      const pool = drawableQuests();
+      const avoidList = avoidIds.filter(Boolean);
+      if (options.varyEnergy && avoidList.length) {
+        const previous = getQuest(avoidList[0]);
+        const variedPool = pool.filter(quest => !avoidList.includes(quest.id) && (!previous || quest.energy !== previous.energy));
+        if (variedPool.length) return pickMany(1, variedPool)[0] || null;
+      }
+      return pickMany(1, pool, avoidList)[0] || pool.find(quest => !avoidList.includes(quest.id)) || pool[0] || null;
+    }
+
+    function syncDailyCache() {
+      app.dailyByMood = app.dailyByMood && typeof app.dailyByMood === "object" ? app.dailyByMood : {};
+      app.dailyByMood[app.mood] = app.daily;
+    }
+
+    function getVisibleQuest(id) {
+      const quest = getQuest(id);
+      if (!quest || quest.archived || isCompletedToday(id)) return null;
+      return quest;
+    }
+
+    function replaceCompletedQuest(completedId) {
+      const backupIds = app.daily.backupQuestIds || [];
+      const completed = completedTodayIds();
+
+      if (app.daily.mainQuestId === completedId) {
+        const replacement = pickOneQuest([...completed, ...backupIds]);
+        app.daily.mainQuestId = replacement ? replacement.id : null;
+      }
+
+      const index = backupIds.indexOf(completedId);
+      if (index >= 0) {
+        const replacement = pickOneQuest([...completed, app.daily.mainQuestId, ...backupIds]);
+        if (replacement) {
+          app.daily.backupQuestIds[index] = replacement.id;
+        } else {
+          app.daily.backupQuestIds.splice(index, 1);
+        }
+      }
+
+      if (isCompletedToday(app.currentDrawId)) {
+        const replacement = pickOneDrawQuest([...completed, app.daily.mainQuestId, ...(app.daily.backupQuestIds || [])]);
+        app.currentDrawId = replacement ? replacement.id : null;
+      }
+
+      syncDailyCache();
+    }
+
+    function ensureDaily(force = false) {
+      app.dailyByMood = app.dailyByMood && typeof app.dailyByMood === "object" ? app.dailyByMood : {};
+      const currentDaily = app.dailyByMood[app.mood] || app.daily || { date: "", mainQuestId: null, backupQuestIds: [], completedIds: [] };
+      app.daily = currentDaily;
+      app.daily.completedIds = Array.isArray(app.daily.completedIds) ? app.daily.completedIds : [];
+      app.daily.backupQuestIds = Array.isArray(app.daily.backupQuestIds) ? app.daily.backupQuestIds : [];
+      const dailyIds = [currentDaily.mainQuestId, ...(currentDaily.backupQuestIds || [])].filter(Boolean);
+      const dailyStillExists = dailyIds.every(id => app.quests.some(quest => quest.id === id && !quest.archived));
+      const hasCompletedVisible = dailyIds.some(isCompletedToday);
+      if (!force && currentDaily.date === todayKey && currentDaily.mood === app.mood && dailyStillExists && currentDaily.mainQuestId && !hasCompletedVisible) {
+        return;
+      }
+
+      const keptCompletedIds = !force && currentDaily.date === todayKey ? [...completedTodayIds()] : [];
+      app.daily.completedIds = keptCompletedIds;
+      const pool = eligibleQuests();
+      const picked = pickMany(3, pool);
+      app.daily = {
+        date: todayKey,
+        mood: app.mood,
+        mainQuestId: picked[0] ? picked[0].id : null,
+        backupQuestIds: picked.slice(1, 3).map(quest => quest.id),
+        completedIds: keptCompletedIds
+      };
+      app.dailyByMood[app.mood] = app.daily;
+      saveState();
+    }
+
+    function getQuest(id) {
+      return app.quests.find(quest => quest.id === id);
+    }
+
+    function createRealmStats() {
+      return Object.fromEntries(realmFilters.map(realm => [realm.id, 0]));
+    }
+
+    function realmForCategory(category) {
+      if (categories[category]) return category;
+      if (legacyCategoryRealms[category]) return legacyCategoryRealms[category];
+      const realm = realmFilters.find(filter => filter.categories.includes(category));
+      return realm ? realm.id : null;
+    }
+
+    function categoryStats() {
+      const stats = createRealmStats();
+      for (const item of app.history) {
+        const realm = realmForCategory(item.category);
+        if (realm) stats[realm] += 1;
+      }
+      return stats;
+    }
+
+    function questPoolCategoryStats() {
+      const stats = createRealmStats();
+      for (const quest of app.quests) {
+        const realm = realmForCategory(quest.category);
+        if (!quest.archived && realm) stats[realm] += 1;
+      }
+      return stats;
+    }
+
+    function topCategory(stats = categoryStats()) {
+      const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+      return entries[0] || null;
+    }
+
+    function recentCategories(limit = 3) {
+      const seen = [];
+      for (const item of [...app.history].reverse()) {
+        if (!seen.includes(item.category)) seen.push(item.category);
+        if (seen.length >= limit) break;
+      }
+      return seen;
+    }
+
+    function questPrompt(quest) {
+      if (!quest) return "";
+      if (questPromptByTitle[quest.title]) return questPromptByTitle[quest.title];
+      const prompts = {
+        "放松": "给自己留一小段回神的时间。",
+        "灵感": "让眼睛先去旅行，喜欢的就留下。",
+        "漫游": "顺着好奇心走一小段路。",
+        "创作": "做出一个版本，让想法有形状。",
+        "整理": "从一个角落开始，让空间轻一点。",
+        "项目": "给未来的花园铺一块小路石。"
+      };
+      return prompts[quest.category] || "随手做一点也很好。";
+    }
+
+    function energyBars(level, isMini = false) {
+      const safeLevel = Math.max(1, Math.min(3, Number(level) || 1));
+      const bars = Array.from({ length: 3 }, (_, index) => `<span class="bar ${index < safeLevel ? "on" : ""}"></span>`).join("");
+      return `<span class="energy-bars ${isMini ? "mini" : ""}" aria-hidden="true">${bars}</span>`;
+    }
+
+    function energyMeta(quest) {
+      return `<span class="energy-meta" aria-label="${getEnergyLabel(quest.energy)}">${energyBars(getEnergyLevel(quest.energy), true)}<span class="sr-only">${getEnergyLabel(quest.energy)}</span></span>`;
+    }
+
+    function questExternalLink(quest) {
+      const title = quest?.title || "";
+      const linkRules = [
+        { test: /图寻/, url: "https://tuxun.fun/", label: "打开图寻" },
+        { test: /Pinterest/i, url: "https://www.pinterest.com/", label: "打开 Pinterest" },
+        { test: /Instagram/i, url: "https://www.instagram.com/", label: "打开 Instagram" },
+        { test: /Shorts/i, url: "https://www.youtube.com/shorts", label: "打开 YouTube Shorts" },
+        { test: /YouTube/i, url: "https://www.youtube.com/", label: "打开 YouTube" },
+        { test: /(^|[\s，、])X($|[\s，、])/, url: "https://x.com/", label: "打开 X" },
+        { test: /Google 地图|地图|街景|海边小镇|老城区|沿着一条河/, url: "https://www.google.com/maps", label: "打开 Google 地图" },
+        { test: /维基|Wiki|历史|王朝|人物故事|历史人物/, url: "https://zh.wikipedia.org/", label: "打开维基百科" }
+      ];
+      return linkRules.find(rule => rule.test.test(title)) || null;
+    }
+
+    function linkButton(quest, className = "plain-btn action-btn") {
+      const link = questExternalLink(quest);
+      if (!link) return "";
+      return `<a class="${className} quest-link has-tip" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" data-tip="${escapeHtml(link.label)}" title="${escapeHtml(link.label)}" aria-label="${escapeHtml(link.label)}"><svg class="i"><use href="#i-link"></use></svg></a>`;
+    }
+
+    function setEmojiFavicon(mark) {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+          <rect width="64" height="64" rx="18" fill="#dcd3ff"/>
+          <text x="50%" y="53%" text-anchor="middle" dominant-baseline="middle" font-size="34">${mark}</text>
+        </svg>
+      `;
+      let favicon = document.getElementById("pageFavicon");
+      if (!favicon) {
+        favicon = document.createElement("link");
+        favicon.id = "pageFavicon";
+        favicon.rel = "icon";
+        favicon.type = "image/svg+xml";
+        document.head.appendChild(favicon);
+      }
+      favicon.href = "data:image/svg+xml," + encodeURIComponent(svg);
+      document.title = "Quest Garden";
+    }
+
+    function setRandomBrandMark() {
+      const foodAndDrinks = ["🍓", "🍒", "🍑", "🍊", "🍋", "🍉", "🍇", "🥝", "🥥", "🥐", "🥨", "🧀", "🍟", "🍕", "🌮", "🍣", "🍙", "🍡", "🍦", "🍧", "🍰", "🧁", "🍫", "🍯", "☕", "🍵", "🧋", "🍹", "🥤"];
+      const travel = ["🧭", "🧳", "🏕️", "🏖️", "🏝️", "🏔️", "⛰️", "🌋", "🗻", "🏜️", "🏞️", "🏙️", "🌉", "🎡", "🎢", "⛲", "⛵", "🚲", "🚗", "🚃", "🚂", "✈️", "🚀", "🛶", "🛟", "🌴", "🌺"];
+      const marks = [...foodAndDrinks, ...travel];
+      const mark = marks[Math.floor(Math.random() * marks.length)];
+      const el = document.getElementById("brandMark");
+      if (el) el.textContent = mark;
+      setEmojiFavicon(mark);
+    }
+
+    function questCard(quest, options = {}) {
+      if (!quest) return `<div class="empty">Quest 池空空的，先种下一颗新种子。</div>`;
+      const done = app.daily.completedIds.includes(quest.id);
+      const cardClass = options.feature ? "quest-card feature" : "quest-card alt";
+      const ribbon = "";
+      const roleLabel = options.label || (options.feature ? "今日主卡" : "备用卡");
+      const prompt = options.feature ? `<p class="quest-prompt">${questPrompt(quest)}</p>` : "";
+      const rerollAction = options.rerollAction || (options.feature ? "reroll-draw" : "reroll-backup");
+      const metaItems = options.hideMeta ? "" : energyMeta(quest);
+      const metaBlock = metaItems ? `
+          <div class="quest-body">
+            <div class="quest-meta">
+              ${metaItems}
+            </div>
+          </div>
+      ` : "";
+      const rerollButton = options.showReroll === false ? "" : `
+          <button class="plain-btn action-btn has-tip" type="button" data-action="${rerollAction}" data-id="${quest.id}" data-tip="换一张" title="换一张" aria-label="换一张"><svg class="i"><use href="#i-shuffle"></use></svg></button>
+      `;
+      const completeButton = options.showComplete === false ? "" : `
+          <button class="primary-btn peach action-btn has-tip" type="button" data-action="complete" data-id="${quest.id}" data-tip="完成" title="完成" aria-label="完成"><svg class="i"><use href="#i-check"></use></svg></button>
+      `;
+      const externalLinkButton = linkButton(quest);
+      const actions = options.actions === false ? "" : `
+        <div class="actions">
+          ${externalLinkButton}
+          ${rerollButton}
+          ${completeButton}
+        </div>
+      `;
+
+      return `
+        <article class="${cardClass} ${done ? "done" : ""}">
+          ${ribbon}
+          <div class="quest-top">
+            <div class="quest-title-wrap">
+              <h3 class="quest-title">${escapeHtml(quest.title)}</h3>
+              ${prompt}
+            </div>
+          </div>
+          ${metaBlock}
+          ${actions}
+          <div class="quest-kicker">${roleLabel} · ${escapeHtml(quest.category)}</div>
+        </article>
+      `;
+    }
+
+    function render() {
+      ensureDaily();
+      renderShell();
+      renderMoods();
+      renderToday();
+      renderDraw();
+      renderPool();
+      renderMap();
+      bindDynamicActions();
+    }
+
+    function renderShell() {
+      document.querySelectorAll(".tab-btn").forEach(button => {
+        button.classList.toggle("active", button.dataset.tab === app.activeTab);
+      });
+      document.querySelectorAll(".view").forEach(view => {
+        view.classList.toggle("active", view.id === "view-" + app.activeTab);
+      });
+      const greetingByMood = {
+        tired: "慢一点也很好",
+        normal: "今天走一条舒服的小路",
+        great: "能量满格，随便探索"
+      };
+      document.getElementById("todayGreeting").textContent = greetingByMood[app.mood] || "今天也可以只走一小步";
+    }
+
+    function renderMoods() {
+      document.getElementById("moodGrid").innerHTML = moods.map(mood => `
+        <button class="mood-btn ${app.mood === mood.id ? "active" : ""}" type="button" data-mood="${mood.id}">
+          ${energyBars(mood.level)}
+          <span class="label">${mood.label}</span>
+        </button>
+      `).join("");
+      const routeText = document.getElementById("routeText");
+      if (routeText) routeText.textContent = getMood().route;
+    }
+
+    function renderToday() {
+      const main = getVisibleQuest(app.daily.mainQuestId);
+      const backups = app.daily.backupQuestIds.map(getVisibleQuest).filter(Boolean);
+      document.getElementById("mainQuestMount").innerHTML = main
+        ? questCard(main, { feature: true, label: "今日主卡", rerollAction: "reroll-main", hideMeta: true })
+        : `<div class="empty">这个能量档今天已经完成啦。</div>`;
+      document.getElementById("backupMount").innerHTML = backups.length
+        ? backups.map(quest => questCard(quest, { label: "备用卡", rerollAction: "reroll-backup", hideMeta: true })).join("")
+        : `<div class="empty">还没有备用卡。</div>`;
+    }
+
+    function renderDraw() {
+      const previousDrawId = app.currentDrawId;
+      let current = getVisibleQuest(app.currentDrawId);
+      if (!current) {
+        current = pickOneDrawQuest([app.currentDrawId]);
+        app.currentDrawId = current ? current.id : null;
+      }
+      if (app.currentDrawId !== previousDrawId) saveState();
+      document.getElementById("drawMount").innerHTML = current
+        ? `<div class="draw-stack">
+            <div class="draw-card-shell">
+              ${questCard(current, { feature: true, label: "抽到的卡", showReroll: false })}
+            </div>
+            <div class="draw-controls">
+              <button class="primary-btn draw-main-btn has-tip" type="button" data-action="draw-next" data-tip="再抽一张" title="再抽一张" aria-label="再抽一张"><svg class="i"><use href="#i-coffee"></use></svg><span>抽卡</span></button>
+            </div>
+          </div>`
+        : `<div class="empty">Quest 池空空的。</div>`;
+    }
+
+    function customSelectOptions(type) {
+      if (type === "category") return Object.keys(categories).map(category => ({ value: category, label: category }));
+      if (type === "energy") return energyOptions;
+      return durationOptions.map(option => ({ value: option.value, label: option.label }));
+    }
+
+    function selectElements(type) {
+      const ids = {
+        category: "questCategory",
+        energy: "questEnergy",
+        duration: "questDuration"
+      };
+      const input = document.getElementById(ids[type]);
+      return {
+        input,
+        root: document.querySelector(`[data-select="${type}"]`),
+        button: document.getElementById(ids[type] + "Button"),
+        options: document.getElementById(ids[type] + "Options")
+      };
+    }
+
+    function renderCustomSelect(type) {
+      const { options } = selectElements(type);
+      if (!options) return;
+      options.innerHTML = customSelectOptions(type).map(option => `
+        <button class="select-option" type="button" role="option" data-select-type="${type}" data-select-value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</button>
+      `).join("");
+    }
+
+    function setCustomSelect(type, value, shouldSync = true) {
+      const { input, button, options } = selectElements(type);
+      const choices = customSelectOptions(type);
+      const choice = choices.find(option => String(option.value) === String(value)) || choices[0];
+      if (!choice || !input || !button || !options) return;
+      input.value = choice.value;
+      button.querySelector("span").textContent = choice.label;
+      options.querySelectorAll(".select-option").forEach(option => {
+        const active = option.dataset.selectValue === String(choice.value);
+        option.classList.toggle("active", active);
+        option.setAttribute("aria-selected", active ? "true" : "false");
+      });
+
+      if (shouldSync && type === "energy") {
+        setCustomSelect("duration", String(durationByEnergy[choice.value]), false);
+      }
+      if (shouldSync && type === "duration") {
+        setCustomSelect("energy", energyByDuration[choice.value] || "medium", false);
+      }
+    }
+
+    function renderQuestFormControls() {
+      ["category", "energy", "duration"].forEach(renderCustomSelect);
+      const currentEnergy = document.getElementById("questEnergy").value || "low";
+      setCustomSelect("category", document.getElementById("questCategory").value || Object.keys(categories)[0], false);
+      setCustomSelect("energy", currentEnergy, false);
+      setCustomSelect("duration", document.getElementById("questDuration").value || String(durationByEnergy[currentEnergy]), false);
+    }
+
+    function renderPool() {
+      renderQuestFormControls();
+
+      if (!poolFilters.some(filter => filter.id === app.poolFilter)) app.poolFilter = "全部";
+      const filters = poolFilters.map(filter => `
+        <button class="pool-filter-btn ${app.poolFilter === filter.id ? "active" : ""}" type="button" data-filter="${filter.id}">${filter.label}</button>
+      `).join("");
+      document.getElementById("poolFilters").innerHTML = filters;
+
+      const activeQuests = app.quests.filter(quest => !quest.archived);
+      const archivedQuests = app.quests.filter(quest => quest.archived);
+      const storageToggle = document.querySelector("[data-action='toggle-storage']");
+      if (storageToggle) {
+        storageToggle.classList.toggle("active", app.showStorageBox);
+        storageToggle.setAttribute("aria-pressed", app.showStorageBox ? "true" : "false");
+        storageToggle.setAttribute("data-tip", app.showStorageBox ? "回到 Quest 池" : "收纳盒");
+        storageToggle.setAttribute("title", app.showStorageBox ? "回到 Quest 池" : "收纳盒");
+        storageToggle.setAttribute("aria-label", app.showStorageBox ? "回到 Quest 池" : "收纳盒");
+      }
+      document.getElementById("poolCount").textContent = activeQuests.length;
+      document.getElementById("storageCount").textContent = archivedQuests.length;
+
+      const activeFilter = poolFilters.find(filter => filter.id === app.poolFilter) || poolFilters[0];
+      if (app.showStorageBox) {
+        document.getElementById("poolMount").innerHTML = archivedQuests.length ? archivedQuests.map(storageCard).join("") : `<div class="empty">收纳盒空空的。</div>`;
+        return;
+      }
+
+      const filtered = activeQuests.filter(quest => {
+        if (!activeFilter.categories) return true;
+        return activeFilter.categories.includes(quest.category);
+      });
+
+      document.getElementById("poolMount").innerHTML = filtered.length ? filtered.map(poolCard).join("") : `<div class="empty">这个区域还没有 Quest。</div>`;
+    }
+
+    function poolCard(quest) {
+      return `
+        <article class="pool-card">
+          <div class="pool-card-head">
+            <div>
+              <h3 class="pool-name">${escapeHtml(quest.title)}</h3>
+            </div>
+          </div>
+          <div class="pool-card-bottom">
+            <div class="quest-meta">
+              ${energyMeta(quest)}
+            </div>
+            <div class="actions">
+              ${linkButton(quest, "mini-btn action-btn soft-btn")}
+              <button class="mini-btn action-btn soft-btn has-tip" type="button" data-action="archive" data-id="${quest.id}" data-tip="放进收纳盒" title="放进收纳盒" aria-label="放进收纳盒"><svg class="i"><use href="#i-archive"></use></svg></button>
+              <button class="mini-btn peach action-btn has-tip" type="button" data-action="complete" data-id="${quest.id}" data-tip="补记足迹" title="补记足迹" aria-label="补记足迹"><svg class="i"><use href="#i-check"></use></svg></button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function storageCard(quest) {
+      return `
+        <article class="pool-card storage-card">
+          <button class="mini-btn action-btn soft-btn remove-corner-btn has-tip" type="button" data-action="remove" data-id="${quest.id}" data-tip="永久移除" title="永久移除" aria-label="永久移除"><svg class="i"><use href="#i-remove"></use></svg></button>
+          <div class="pool-card-head">
+            <div>
+              <h3 class="pool-name">${escapeHtml(quest.title)}</h3>
+            </div>
+          </div>
+          <div class="pool-card-bottom">
+            <div class="quest-meta">
+              ${energyMeta(quest)}
+            </div>
+            <div class="actions">
+              ${linkButton(quest, "mini-btn action-btn soft-btn")}
+              <button class="mini-btn action-btn soft-btn has-tip" type="button" data-action="restore" data-id="${quest.id}" data-tip="放回池子" title="放回池子" aria-label="放回池子"><svg class="i"><use href="#i-restore"></use></svg></button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function radarPoint(index, total, ratio, radius = 154, center = 210) {
+      const angle = -Math.PI / 2 + (Math.PI * 2 * index) / total;
+      return {
+        x: center + Math.cos(angle) * radius * ratio,
+        y: center + Math.sin(angle) * radius * ratio
+      };
+    }
+
+    function radarPointList(entries, maxValue, ratioOverride = null) {
+      return entries.map((entry, index) => {
+        const ratio = ratioOverride ?? (maxValue ? Math.max(0.08, entry.value / maxValue) : 0.08);
+        const point = radarPoint(index, entries.length, ratio);
+        return `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+      }).join(" ");
+    }
+
+    function renderRadarChart(entries) {
+      const maxValue = Math.max(1, ...entries.map(entry => entry.value));
+      const grid = [0.25, 0.5, 0.75, 1].map(level => `<polygon class="radar-grid" points="${radarPointList(entries, maxValue, level)}"></polygon>`).join("");
+      const axes = entries.map((entry, index) => {
+        const point = radarPoint(index, entries.length, 1);
+        return `<line class="radar-axis" x1="210" y1="210" x2="${point.x.toFixed(1)}" y2="${point.y.toFixed(1)}"></line>`;
+      }).join("");
+      const points = radarPointList(entries, maxValue);
+      const dots = entries.map((entry, index) => {
+        const ratio = Math.max(0.08, entry.value / maxValue);
+        const point = radarPoint(index, entries.length, ratio);
+        return `<circle class="radar-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="5"></circle>`;
+      }).join("");
+      const labels = entries.map((entry, index) => {
+        const point = radarPoint(index, entries.length, 1.18);
+        return `<text class="radar-label" x="${point.x.toFixed(1)}" y="${point.y.toFixed(1)}">${escapeHtml(entry.category)}</text>`;
+      }).join("");
+
+      return `
+        <svg class="radar-chart" viewBox="0 0 420 420" role="img" aria-label="兴趣领域雷达图">
+          ${grid}
+          ${axes}
+          <polygon class="radar-fill" points="${points}"></polygon>
+          ${dots}
+          ${labels}
+        </svg>
+      `;
+    }
+
+    function dateKeyFromISO(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleDateString("en-CA");
+    }
+
+    function dateKeyFromDate(date) {
+      return date.toLocaleDateString("en-CA");
+    }
+
+    function formatTrailDate(key) {
+      const date = new Date(key + "T00:00:00");
+      if (Number.isNaN(date.getTime())) return key;
+      return `${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+    }
+
+    function formatHistoryDateTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "时间未知";
+      const time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+      if (dateKeyFromISO(value) === todayKey) return `今天 ${time}`;
+      return `${date.getMonth() + 1} 月 ${date.getDate()} 日 ${time}`;
+    }
+
+    function historyTime(value) {
+      const time = new Date(value).getTime();
+      return Number.isNaN(time) ? 0 : time;
+    }
+
+    function trailLevel(count) {
+      if (count >= 4) return 3;
+      if (count >= 2) return 2;
+      if (count >= 1) return 1;
+      return 0;
+    }
+
+    function renderTrailCalendar() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      let selectedDay = app.trailSelectedDate || todayKey;
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      const leadingBlanks = (monthStart.getDay() + 6) % 7;
+      const days = [];
+      for (let day = 1; day <= monthEnd.getDate(); day += 1) {
+        days.push(new Date(today.getFullYear(), today.getMonth(), day));
+      }
+      const trailingBlanks = (7 - ((leadingBlanks + days.length) % 7)) % 7;
+
+      const dayKeys = days.map(dateKeyFromDate);
+      if (!dayKeys.includes(selectedDay)) {
+        selectedDay = todayKey;
+        app.trailSelectedDate = todayKey;
+      }
+      const byDate = Object.fromEntries(dayKeys.map(day => [day, []]));
+      for (const item of app.history) {
+        const key = dateKeyFromISO(item.completedAt);
+        if (byDate[key]) byDate[key].push(item);
+      }
+
+      const walkedDays = Object.values(byDate).filter(items => items.length > 0).length;
+      const blanks = Array.from({ length: leadingBlanks }, () => `<div class="trail-blank" aria-hidden="true"></div>`).join("");
+      const tailBlanks = Array.from({ length: trailingBlanks }, () => `<div class="trail-blank" aria-hidden="true"></div>`).join("");
+      const weekdays = ["一", "二", "三", "四", "五", "六", "日"].map(day => `<span class="trail-weekday">${day}</span>`).join("");
+      const cells = days.map(date => {
+        const day = dateKeyFromDate(date);
+        const items = byDate[day];
+        const isFuture = date > today;
+        const isToday = day === todayKey;
+        const isSelected = day === selectedDay;
+        const count = items.length;
+        const level = trailLevel(count);
+        const realms = [...new Set(items.map(item => realmForCategory(item.category)).filter(Boolean))];
+        const titles = items.slice(0, 3).map(item => item.title);
+        const more = count > 3 ? ` 等 ${count} 个 Quest` : "";
+        const tip = count
+          ? `<span class="trail-tip"><strong>${formatTrailDate(day)} · ${count} 个 Quest</strong><p>${escapeHtml(realms.join("、") || "小路")}：${escapeHtml(titles.join(" / ") + more)}</p></span>`
+          : "";
+        return `
+          <button class="trail-day level-${level} ${count ? "has-trail" : ""} ${isFuture ? "future" : ""} ${isToday ? "today" : ""} ${isSelected ? "selected" : ""}" type="button" data-action="select-trail-day" data-id="${day}" aria-pressed="${isSelected ? "true" : "false"}" aria-label="${formatTrailDate(day)}${count ? `，完成 ${count} 个 Quest` : ""}${isToday ? "，今天" : ""}" ${isFuture ? "disabled" : ""}>
+            <span class="trail-date">${Number(day.slice(-2))}</span>
+            ${count ? `<span class="trail-mark">${count}</span>${tip}` : ""}
+          </button>
+        `;
+      }).join("");
+
+      document.getElementById("trailCalendar").innerHTML = `
+        <div class="trail-head">
+          <h3>足迹月历</h3>
+          <span>${today.getMonth() + 1} 月 · ${walkedDays ? `${walkedDays} 天有小路亮起` : "还没有留下足迹"}</span>
+        </div>
+        <div class="trail-weekdays">${weekdays}</div>
+        <div class="trail-grid">${blanks}${cells}${tailBlanks}</div>
+        ${renderTrailDayDetails(selectedDay)}
+      `;
+    }
+
+    function historyEntriesForDate(day) {
+      return app.history
+        .map((entry, index) => ({ entry, index }))
+        .filter(({ entry }) => dateKeyFromISO(entry.completedAt) === day)
+        .sort((a, b) => historyTime(b.entry.completedAt) - historyTime(a.entry.completedAt));
+    }
+
+    function renderTrailDayDetails(day) {
+      const entries = historyEntriesForDate(day);
+      const countText = entries.length ? `${entries.length} 个 Quest` : "还没有足迹";
+
+      return `
+        <div class="trail-detail">
+          <div class="trail-detail-head">
+            <h4>${escapeHtml(formatTrailDate(day))}</h4>
+            <span>${countText}</span>
+          </div>
+          ${entries.length ? `
+            <div class="history-edit-list">
+              ${entries.map(({ entry, index }) => `
+                <div class="history-edit-item">
+                  <div class="history-edit-copy">
+                    <strong>${escapeHtml(entry.title || "未命名 Quest")}</strong>
+                    <span>${escapeHtml(entry.category || "未分类")} · ${escapeHtml(formatHistoryDateTime(entry.completedAt))}</span>
+                  </div>
+                  <button class="history-edit-btn has-tip" type="button" data-action="remove-history" data-id="${index}" data-tip="撤回足迹" title="撤回足迹" aria-label="撤回 ${escapeHtml(entry.title || "这条足迹")}">
+                    <svg class="i"><use href="#i-remove"></use></svg>
+                  </button>
+                </div>
+              `).join("")}
+            </div>
+          ` : `<div class="history-empty">这天还没有足迹。</div>`}
+        </div>
+      `;
+    }
+
+    function renderMap() {
+      const usingHistory = app.history.length > 0;
+      const stats = usingHistory ? categoryStats() : questPoolCategoryStats();
+      const entries = realmFilters.map(realm => ({
+        category: realm.label,
+        value: stats[realm.id] || 0
+      }));
+      const total = entries.reduce((sum, entry) => sum + entry.value, 0);
+      const top = topCategory(stats);
+      const sourceLabel = usingHistory ? "小路足迹" : "花园分布";
+      const realmTitle = usingHistory ? "最近亮起的领域" : "花园里的领域";
+      const realmStatus = usingHistory ? "最近亮起" : "花园偏向";
+
+      document.getElementById("adventureMap").innerHTML = renderRadarChart(entries);
+      renderTrailCalendar();
+      document.getElementById("activeRealm").textContent = top ? `${realmStatus}：${top[0]}` : "还在散步";
+
+      const sorted = [...entries].sort((a, b) => b.value - a.value);
+      document.getElementById("mapStats").innerHTML = `
+        <div class="stat-card">
+          <h3>${sourceLabel}</h3>
+          <div class="stat-number"><strong>${total}</strong><span>${usingHistory ? "次" : "张"}</span></div>
+        </div>
+        <div class="badge-card">
+          <h3>${realmTitle}</h3>
+          <div class="history-list">
+            ${sorted.map(entry => `
+              <div class="history-item"><div><strong>${escapeHtml(entry.category)}</strong></div><div>${entry.value}</div></div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function removeCompletedTodayFlag(questId) {
+      if (!questId) return;
+      const stillCompletedToday = app.history.some(item => item.questId === questId && dateKeyFromISO(item.completedAt) === todayKey);
+      if (stillCompletedToday) return;
+
+      const removeFromDay = day => {
+        if (!day || day.date !== todayKey || !Array.isArray(day.completedIds)) return;
+        day.completedIds = day.completedIds.filter(item => item !== questId);
+      };
+
+      removeFromDay(app.daily);
+      Object.values(app.dailyByMood || {}).forEach(removeFromDay);
+    }
+
+    function refreshQuestCompletionMeta(questId) {
+      const quest = getQuest(questId);
+      if (!quest) return;
+      quest.completedCount = Math.max(0, Number(quest.completedCount || 0) - 1);
+      const latest = app.history
+        .filter(item => item.questId === questId)
+        .sort((a, b) => historyTime(b.completedAt) - historyTime(a.completedAt))[0];
+      quest.lastCompletedAt = latest ? latest.completedAt : null;
+    }
+
+    function removeHistoryEntry(index) {
+      const historyIndex = Number(index);
+      if (!Number.isInteger(historyIndex) || historyIndex < 0 || historyIndex >= app.history.length) return;
+      const [entry] = app.history.splice(historyIndex, 1);
+      if (!entry) return;
+      refreshQuestCompletionMeta(entry.questId);
+      if (dateKeyFromISO(entry.completedAt) === todayKey) removeCompletedTodayFlag(entry.questId);
+      saveState();
+      render();
+      showToast("这条足迹已撤回。");
+    }
+
+    function completionMessage() {
+      const messages = [
+        "这一步已经很好了。",
+        "今天的小路亮了一格。",
+        "这个兴趣被轻轻照顾到了。",
+        "不用继续也可以，停在这里也很好。",
+        "你刚刚给自己留了一点光。"
+      ];
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function bindDynamicActions() {
+      document.querySelectorAll("[data-mood]").forEach(button => {
+        button.onclick = () => {
+          app.mood = button.dataset.mood;
+          ensureDaily();
+          saveState();
+          render();
+        };
+      });
+
+      document.querySelectorAll("[data-filter]").forEach(button => {
+        button.onclick = () => {
+          app.poolFilter = button.dataset.filter;
+          app.showStorageBox = false;
+          saveState();
+          renderPool();
+          bindDynamicActions();
+        };
+      });
+
+      document.querySelectorAll(".select-trigger").forEach(button => {
+        button.onclick = event => {
+          event.stopPropagation();
+          const root = button.closest(".custom-select");
+          const wasOpen = root.classList.contains("open");
+          document.querySelectorAll(".custom-select.open").forEach(select => {
+            select.classList.remove("open");
+            select.querySelector(".select-trigger")?.setAttribute("aria-expanded", "false");
+          });
+          root.classList.toggle("open", !wasOpen);
+          button.setAttribute("aria-expanded", !wasOpen ? "true" : "false");
+        };
+      });
+
+      document.querySelectorAll("[data-select-value]").forEach(button => {
+        button.onclick = event => {
+          event.stopPropagation();
+          const type = button.dataset.selectType;
+          setCustomSelect(type, button.dataset.selectValue, true);
+          const root = button.closest(".custom-select");
+          root.classList.remove("open");
+          root.querySelector(".select-trigger")?.setAttribute("aria-expanded", "false");
+        };
+      });
+
+      if (!window.__questSelectOutsideBound) {
+        window.__questSelectOutsideBound = true;
+        document.addEventListener("click", () => {
+          document.querySelectorAll(".custom-select.open").forEach(select => {
+            select.classList.remove("open");
+            select.querySelector(".select-trigger")?.setAttribute("aria-expanded", "false");
+          });
+        });
+      }
+
+      document.querySelectorAll("[data-action]").forEach(button => {
+        button.onclick = () => handleAction(button.dataset.action, button.dataset.id);
+      });
+    }
+
+    function handleAction(action, id) {
+      if (action === "draw-next") {
+        drawQuest(app.currentDrawId, { activateDraw: false });
+        return;
+      }
+
+      if (action === "toggle-storage") {
+        app.showStorageBox = !app.showStorageBox;
+        saveState();
+        renderPool();
+        bindDynamicActions();
+        showToast(app.showStorageBox ? "收纳盒打开了。" : "回到 Quest 池。");
+        return;
+      }
+
+      if (action === "remove-history") {
+        removeHistoryEntry(id);
+        return;
+      }
+
+      if (action === "select-trail-day") {
+        app.trailSelectedDate = id || todayKey;
+        saveState();
+        renderMap();
+        bindDynamicActions();
+        return;
+      }
+
+      const quest = getQuest(id);
+      if (!quest) return;
+
+      if (action === "complete") {
+        const isBackfill = app.activeTab === "pool";
+        if (app.daily.completedIds.includes(id)) {
+          showToast("这张 Quest 今天已经留下足迹。");
+          return;
+        }
+        const completedAt = new Date().toISOString();
+        app.daily.completedIds.push(id);
+        quest.completedCount += 1;
+        quest.lastCompletedAt = completedAt;
+        const historyEntry = {
+          questId: quest.id,
+          title: quest.title,
+          category: quest.category,
+          duration: quest.duration,
+          energy: quest.energy,
+          completedAt
+        };
+        app.history.push(historyEntry);
+        app.trailSelectedDate = todayKey;
+        replaceCompletedQuest(id);
+        showToast(isBackfill ? "已补记到今日足迹。" : completionMessage(), {
+          label: "撤回",
+          duration: 4800,
+          onClick: () => removeHistoryEntry(app.history.indexOf(historyEntry))
+        });
+      }
+
+      if (action === "reroll-main") {
+        rerollDailyMain(id);
+        return;
+      }
+
+      if (action === "reroll-backup") {
+        rerollDailyBackup(id);
+        return;
+      }
+
+      if (action === "reroll-draw" || action === "reroll") {
+        drawQuest(id, { activateDraw: false });
+        return;
+      }
+
+      if (action === "archive") {
+        quest.archived = true;
+        if (app.currentDrawId === id) app.currentDrawId = null;
+        showToast("这张卡先放进收纳盒。");
+      }
+
+      if (action === "restore") {
+        quest.archived = false;
+        showToast("这张卡回到 Quest 池了。");
+      }
+
+      if (action === "remove") {
+        if (!window.confirm("确认永久移除这张卡吗？历史足迹会保留。")) return;
+        app.quests = app.quests.filter(item => item.id !== id);
+        if (app.currentDrawId === id) app.currentDrawId = null;
+        if (app.daily?.mainQuestId === id) app.daily.mainQuestId = null;
+        app.daily.backupQuestIds = (app.daily.backupQuestIds || []).filter(item => item !== id);
+        app.daily.completedIds = (app.daily.completedIds || []).filter(item => item !== id);
+        Object.values(app.dailyByMood || {}).forEach(day => {
+          if (day.mainQuestId === id) day.mainQuestId = null;
+          day.backupQuestIds = (day.backupQuestIds || []).filter(item => item !== id);
+          day.completedIds = (day.completedIds || []).filter(item => item !== id);
+        });
+        showToast("这张卡已经移走。");
+      }
+
+      saveState();
+      render();
+    }
+
+    function rerollDailyMain(avoidId) {
+      const backupIds = app.daily.backupQuestIds || [];
+      const quest = pickOneQuest([avoidId, ...backupIds]);
+      if (!quest) return;
+      app.daily.mainQuestId = quest.id;
+      syncDailyCache();
+      saveState();
+      render();
+      showToast("今日主卡已换一张。");
+    }
+
+    function rerollDailyBackup(avoidId) {
+      const backupIds = app.daily.backupQuestIds || [];
+      const index = backupIds.indexOf(avoidId);
+      if (index < 0) return;
+      const quest = pickOneQuest([avoidId, app.daily.mainQuestId, ...backupIds]);
+      if (!quest) return;
+      app.daily.backupQuestIds[index] = quest.id;
+      syncDailyCache();
+      saveState();
+      render();
+      showToast("备用卡已换一张。");
+    }
+
+    function drawQuest(avoidId = null, options = {}) {
+      const { activateDraw = true } = options;
+      const trigger = document.querySelector("[data-action='draw-next']");
+      if (trigger) {
+        trigger.classList.remove("draw-press");
+        void trigger.offsetWidth;
+        trigger.classList.add("draw-press");
+        window.setTimeout(() => trigger.classList.remove("draw-press"), 360);
+      }
+      const quest = pickOneDrawQuest(avoidId ? [avoidId] : [], { varyEnergy: true });
+      if (!quest) {
+        app.currentDrawId = null;
+        saveState();
+        render();
+        showToast("今天的 Quest 池已经抽完啦。");
+        return;
+      }
+      app.currentDrawId = quest.id;
+      if (activateDraw) app.activeTab = "draw";
+      saveState();
+      render();
+      const nextTrigger = document.querySelector("[data-action='draw-next']");
+      if (nextTrigger) {
+        nextTrigger.classList.add("draw-press");
+        window.setTimeout(() => nextTrigger.classList.remove("draw-press"), 360);
+      }
+      const card = document.querySelector("#drawMount .quest-card");
+      if (card) {
+        card.classList.add("draw-pop");
+        window.setTimeout(() => card.classList.remove("draw-pop"), 320);
+      }
+      showToast("抽到新的 Quest 了。");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showToast(message, action = null) {
+      const toast = document.getElementById("toast");
+      toast.innerHTML = "";
+      const text = document.createElement("span");
+      text.className = "toast-message";
+      text.textContent = message;
+      toast.appendChild(text);
+      if (action && typeof action.onClick === "function") {
+        const button = document.createElement("button");
+        button.className = "toast-action";
+        button.type = "button";
+        button.textContent = action.label || "撤回";
+        button.onclick = () => {
+          clearTimeout(toastTimer);
+          toast.classList.remove("show");
+          action.onClick();
+        };
+        toast.appendChild(button);
+      }
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), action?.duration || 1800);
+    }
+
+    document.querySelectorAll(".tab-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        app.activeTab = button.dataset.tab;
+        saveState();
+        render();
+      });
+    });
+
+    document.getElementById("exportBtn").addEventListener("click", exportBackup);
+
+    document.getElementById("importBtn").addEventListener("click", () => {
+      document.getElementById("backupInput").click();
+    });
+
+    document.getElementById("backupInput").addEventListener("change", event => {
+      const file = event.currentTarget.files?.[0];
+      importBackup(file);
+      event.currentTarget.value = "";
+    });
+
+    document.getElementById("questForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const title = String(form.get("title") || "").trim();
+      if (!title) return;
+      const energy = String(form.get("energy") || "low");
+      app.quests.unshift(makeQuest({
+        title,
+        category: String(form.get("category")),
+        energy,
+        duration: normalizeDuration(energy, Number(form.get("duration"))),
+        tags: []
+      }, app.quests.length + 1));
+      event.currentTarget.reset();
+      setCustomSelect("category", Object.keys(categories)[0], false);
+      setCustomSelect("energy", "low", false);
+      setCustomSelect("duration", "5", false);
+      app.poolFilter = "全部";
+      saveState();
+      render();
+      showToast("新 Quest 已经长进池子里。");
+    });
+
+    setRandomBrandMark();
+    ensureDaily();
+    render();
+  </script>
+</body>
+</html>
